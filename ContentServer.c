@@ -6,7 +6,6 @@
 #include <netdb.h> /* gethostbyaddr */
 #include <unistd.h> /* fork */
 #include <stdlib.h> /* exit */
-#include <ctype.h> /* toupper */
 #include <signal.h> /* signal */
 #include <string.h> //strlen
 
@@ -65,7 +64,7 @@ int main(int argc , char *argv[])
         }
          
         //Now join the thread , so that we dont terminate before the thread
-        //pthread_join( sniffer_thread , NULL);
+        pthread_join( sniffer_thread , NULL);
     }
      
     if (client_sock < 0)
@@ -98,6 +97,7 @@ void thread_list(void *newsock) {
         ;
     }
     printf("Closing connection.\n");
+    pclose(ls);
     close(sock); /* Close socket */
 }
 
