@@ -32,7 +32,7 @@ void main(int argc, char *argv[]) {
     /* Initiate connection */
     if (connect(sock, serverptr, sizeof (server)) < 0)
         perror_exit("connect");
-    printf("Connecting to %s port %d\n", argv[1], port);
+    printf("Connecting to %s port %d\n", argv[2], port);
     do {
         char letters[10];
         sprintf(letters, "%d", strlen(ContentServer));
@@ -43,8 +43,8 @@ void main(int argc, char *argv[]) {
         printf("%s\n", ContentServer);
         ContentServer = strtok(NULL, ",");
         while (read(sock, buf, 2) == 0);
-    } while (ContentServer != NULL); /* Finish on "end" */
-    write(sock, "END", 3);
+    } while (ContentServer != NULL); 
+    write(sock, "END", 3);  /* Finish on "end" */
     close(sock);
 }
 

@@ -8,14 +8,15 @@
 #include <stdlib.h> /* exit */
 #include <signal.h> /* signal */
 #include <string.h> //strlen
+#include "MirrorManager.h" /*list,fetch*/
 
-void thread_list(void *newsock);
 void perror_exit(char *message);
  
 int main(int argc , char *argv[])
 {
     int socket_desc , client_sock , c , *new_sock;
     struct sockaddr_in server , client;
+    char dir[256] = argv[1];
      
     //Create socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
@@ -57,7 +58,7 @@ int main(int argc , char *argv[])
         new_sock = malloc(sizeof(int));
         *new_sock = client_sock;
          
-        if( pthread_create( &sniffer_thread , NULL ,  thread_list , (void*) new_sock) < 0)
+        if( pthread_create( &sniffer_thread , NULL ,  thread_list , (void*) new_sock, dir) < 0)
         {
             perror("could not create thread");
             return 1;
@@ -76,6 +77,7 @@ int main(int argc , char *argv[])
     return 0;
 }
 
+/*
 void thread_list(void *newsock) {
     int sock = *(int*) newsock;
     char buf[512];
@@ -98,7 +100,7 @@ void thread_list(void *newsock) {
     }
     printf("Closing connection.\n");
     pclose(ls);
-    close(sock); /* Close socket */
+    close(sock); 
 }
 
 void thread_fetch(void *newsock, char file[512]) {
@@ -112,8 +114,8 @@ void thread_fetch(void *newsock, char file[512]) {
 
     }
     printf("Closing connection.\n");
-    close(sock); /* Close socket */
-}
+    close(sock); 
+}*/
 
 void perror_exit(char *message) {
     perror(message);
