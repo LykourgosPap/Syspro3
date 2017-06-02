@@ -10,15 +10,18 @@
 #include <string.h> //strlen
 #include "MirrorManager.h" /*list,fetch*/
 #include "Global.h"
+#include "Args.h"
+#include "ListFetch.h"
 
 void perror_exit(char *message);
  
 int main(int argc , char *argv[])
 {
-    int socket_desc , client_sock , c , *new_sock;
+    int socket_desc , client_sock , c;
     struct sockaddr_in server , client;
     char dir[256];
     strcpy(dir, argv[1]);
+    args *arguments;
      
     //Create socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
@@ -51,16 +54,16 @@ int main(int argc , char *argv[])
      
      
     //Accept and incoming connection
-
+ 
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
     {
         puts("Connection accepted");
          
         pthread_t sniffer_thread;
-        new_sock = malloc(sizeof(int));
-        *new_sock = client_sock;
+        arguments = malloc(sizeof(args));
+        arguments->sock = client_sock;
          
-        if( pthread_create( &sniffer_thread , NULL ,  thread_list , (void*) new_sock, dir) < 0)
+        if( pthread_create( &sniffer_thread , NULL ,  thread_list , (void*) arguments) < 0)
         {
             perror("could not create thread");
             return 1;
@@ -69,7 +72,7 @@ int main(int argc , char *argv[])
         //Now join the thread , so that we dont terminate before the thread
         pthread_join( sniffer_thread , NULL);
     }
-     
+
     if (client_sock < 0)
     {
         perror("accept failed");
@@ -79,45 +82,6 @@ int main(int argc , char *argv[])
     return 0;
 }
 
-/*
-void thread_list(void *newsock) {
-    int sock = *(int*) newsock;
-    char buf[512];
-    usleep(100);
-    if (read(sock, buf, 512) < 0)
-        perror_exit("read");
-    FILE *ls = popen("ls -Rp", "r");
-    char buf2[512];
-    if (!strncmp(buf, "LIST", 4)) {
-        while (fgets(buf, sizeof (buf), ls) != 0) {
-            if (buf[0] != '\n') {
-                if (write(sock, buf, strlen(buf) + 1) < 0)
-                    perror_exit("write");
-            }
-            memset(buf, 0, 512);
-        }
-    }
-    if (!strncmp(buf, "FETCH", 5)){
-        ;
-    }
-    printf("Closing connection.\n");
-    pclose(ls);
-    close(sock); 
-}
-
-void thread_fetch(void *newsock, char file[512]) {
-    int sock = *(int*) newsock;
-    FILE *myfile = fopen(file, "r");
-    char buf[512];
-    char buf2[512];
-    while (fgets(buf, sizeof (buf), myfile) != 0) {
-            if (write(sock, buf, strlen(buf) + 1) < 0)
-                perror_exit("write");
-
-    }
-    printf("Closing connection.\n");
-    close(sock); 
-}*/
 
 void perror_exit(char *message) {
     perror(message);

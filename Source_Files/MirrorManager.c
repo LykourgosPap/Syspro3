@@ -12,7 +12,6 @@ void Mirror_Manager(void *args1) {
     char buf[1];
     int flag=0;
     int i=0;
-    printf("%d\n", args.delay);
     char forfetch[256];
     while (1) {
         while (read(args.sock, buf, 1) > 0) {
@@ -29,7 +28,6 @@ void Mirror_Manager(void *args1) {
                 if (flag && forfetch[0] != '\n' && forfetch[0] != '\0'){
                     pthread_mutex_lock(&mymutex);
                     stoivadd(&mystoiva, forfetch);
-                    printf("Stoiva:%s\n", mystoiva.dirorfile[mystoiva.items-1]);
                     pthread_mutex_unlock(&mymutex);
                 }
                 i=0;
@@ -45,5 +43,18 @@ void Mirror_Manager(void *args1) {
     close(args.sock); /* Close socket */
 }
 
+void thread_fetch(void *args1) {
+    args arguments = *(args*) args1;
+    FILE *myfile = fopen(arguments.dof, "r");
+    char buf[512];
+    char buf2[512];
+    while (fgets(buf, sizeof (buf), myfile) != 0) {
+        if (write(arguments.sock, buf, strlen(buf) + 1) < 0)
+            perror_exit("write");
+
+    }
+    printf("Closing connection.\n");
+    close(arguments.sock); /* Close socket */
+}
 
 

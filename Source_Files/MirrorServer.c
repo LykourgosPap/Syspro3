@@ -38,15 +38,7 @@ int main(int argc, char *argv[]) {
         /* Create socket */
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         perror_exit("socket");
-    /* Find server address */
-    /*if ((rem = gethostbyname(argv[1])) == NULL) {
-        herror("gethostbyname");
-        exit(1);
-    }*/
 
-    /*server.sin_family = AF_INET; /* Internet domain */
-   /* memcpy(&server.sin_addr, rem->h_addr, rem->h_length);
-    server.sin_port = htons(port); /* Server port */
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons( port );
@@ -81,7 +73,8 @@ int main(int argc, char *argv[]) {
         strtok(buf, ":");
         if ((rem = gethostbyname(buf)) == NULL){
                 herror("gethostbyname");
-                exit(1);
+                write(client_sock, "ok", 2);
+                continue;
         }
         args = malloc(1*sizeof(struct arguments));
         memcpy(&server.sin_addr, rem->h_addr, rem->h_length);
@@ -106,9 +99,14 @@ int main(int argc, char *argv[]) {
             perror("could not create thread");
             return -1;
         }
-        write(client_sock, "ok", 2);
+        if (write(client_sock, "ok", 2) < 0)
+            perror_exit("last write");
     }
-
+    for (i=0; i<nt; i++) {
+        if (pthread_create(&(workers[i]), NULL, Mirror_Manager, (void*) args) < 0) {
+            perror("could not create thread");
+        }
+    }
     pthread_join(*mirror_manager, NULL);
     pthread_mutex_destroy(&mymutex);
     pthread_cond_destroy(&mycond);
@@ -120,16 +118,3 @@ void perror_exit(char *message) {
     exit(EXIT_FAILURE);
 }
 
-/*
-void Mirror_Manager(void *new_sock, struct sockaddr *server, char dof[128], int delay) {
-    int sock = *(int*) new_sock;
-    write(sock, "LIST", 4);
-    char buf[1];
-    while (1) {
-        while (read(sock, buf, 1) > 0) {
-            printf("%s", buf);
-        }
-    }
-    free(new_sock);
-    close(sock); 
-}*/

@@ -10,10 +10,22 @@ void thread_list(void *args1) {
     usleep(100);
     if (read(arguments.sock, buf, 512) < 0)
         perror_exit("read");
-    char buf2[512];
-    sprintf(buf2, "ls -Rp %s", arguments.dof);
-    FILE *ls = popen(buf2, "r");
-    if (!strncmp(buf, "LIST", 4)) {
+
+    if (!strncmp(buf, "FETCH", 5)) {
+            FILE *filetosend = open(dof, "r");
+            while (fgets(buf, sizeof (buf), dof) != 0) {
+                if (write(arguments.sock, buf, strlen(buf)) < 0)
+                    perror_exit("write");
+                memset(buf, 0, 512);
+            }
+            close(filetosend);
+    }
+    
+    if (!strncmp(buf, "LIST", 5)) {
+        char buf2[512];
+        sprintf(buf2, "ls -Rp %s", arguments.dof);
+        FILE *ls = popen(buf2, "r");
+
         while (fgets(buf, sizeof (buf), ls) != 0) {
             if (buf[0] != '\n') {
                 if (write(arguments.sock, buf, strlen(buf) + 1) < 0)
@@ -21,25 +33,10 @@ void thread_list(void *args1) {
             }
             memset(buf, 0, 512);
         }
-    }
-    if (!strncmp(buf, "FETCH", 5)){
-        ;
-    }
-    printf("Closing connection.\n");
-    pclose(ls);
-    close(arguments.sock); /* Close socket */
-}
-
-void thread_fetch(void *args1) {
-    args arguments = *(args*) args1;
-    FILE *myfile = fopen(arguments.dof, "r");
-    char buf[512];
-    char buf2[512];
-    while (fgets(buf, sizeof (buf), myfile) != 0) {
-            if (write(arguments.sock, buf, strlen(buf) + 1) < 0)
-                perror_exit("write");
-
+        pclose(ls);
     }
     printf("Closing connection.\n");
     close(arguments.sock); /* Close socket */
 }
+
+
