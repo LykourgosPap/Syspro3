@@ -6,7 +6,7 @@
 typedef struct arguments{
     int sock;
     struct sockaddr *server;
-    char dof[128];
+    char dof[256];
     int delay;
 }args;
 

@@ -64,12 +64,12 @@ int main(int argc, char *argv[]) {
     client_sock = accept(sock, (struct sockaddr *) &client, (socklen_t*) & c);
     while (1) {
         int letters = 0;
-        while (read(client_sock, buf, 256) == 0);
+        while (read(client_sock, buf, 256) <= 0);
         if (!strncmp(buf, "END", 3))
             break;
         letters = atoi(buf);
         write(client_sock, "ok", 2);
-        while (read(client_sock, buf, letters) == 0);
+        while (read(client_sock, buf, letters) <= 0);
         strtok(buf, ":");
         if ((rem = gethostbyname(buf)) == NULL){
                 herror("gethostbyname");
@@ -103,7 +103,8 @@ int main(int argc, char *argv[]) {
             perror_exit("last write");
     }
     for (i=0; i<nt; i++) {
-        if (pthread_create(&(workers[i]), NULL, Mirror_Manager, (void*) args) < 0) {
+        strcpy(args->dof, argv[4]);
+        if (pthread_create(&(workers[i]), NULL, thread_fetch, (void*) args) < 0) {
             perror("could not create thread");
         }
     }

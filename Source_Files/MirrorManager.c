@@ -45,14 +45,36 @@ void Mirror_Manager(void *args1) {
 
 void thread_fetch(void *args1) {
     args arguments = *(args*) args1;
-    FILE *myfile = fopen(arguments.dof, "r");
-    char buf[512];
-    char buf2[512];
-    while (fgets(buf, sizeof (buf), myfile) != 0) {
-        if (write(arguments.sock, buf, strlen(buf) + 1) < 0)
-            perror_exit("write");
-
+    char savedir[256];
+    strcpy(savedir, arguments.dof);
+    sleep(4);
+    while (!stoivempty(mystoiva)) {
+        pthread_mutex_lock(&mymutex);
+        stoivrem(&mystoiva, &(arguments.dof));
+        printf("%s\n", arguments.dof);
+        pthread_mutex_unlock(&mymutex);
+        if (arguments.dof[strlen(arguments.dof) - 1] == ':') {
+            arguments.dof[strlen(arguments.dof)- 1] = '\0';
+            strcat(savedir, &arguments.dof[2]);
+            mkdir(savedir, 0777);
+            
+        }
+        
+        else if (arguments.dof[strlen(arguments.dof) - 1] == '/'){
+            char reallocation[256];
+            strcpy(reallocation, savedir);
+            //printf("real: %s\n", reallocation);
+            //mkdir(reallocation, 0777);
+        }
     }
+    /*
+    FILE *myfile = fopen(arguments.dof, "w");
+    char buf[1];
+    char buf2[512];
+    while (read(arguments.sock, buf, 1) > 0) {
+        write(myfile, buf, 1);
+    }
+    fclose(myfile);*/
     printf("Closing connection.\n");
     close(arguments.sock); /* Close socket */
 }

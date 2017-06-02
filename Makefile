@@ -31,7 +31,7 @@ ContentServer: $(ODIR)/ContentServer.o $(ODIR)/ListFetch.o
 	gcc -o $@ $^ $(LIBS)
 
 RunMirrorServer: MirrorServer
-	./MirrorServer -p 1234 -m ./bla -w 10
+	./MirrorServer -p 1234 -m ./Dls/ -w 10
 
 RunMirrorInitiator: MirrorInitiator
 	./MirrorInitiator -n 192.168.8.14 -p 1234 -s 192.168.8.155:8888:./:5,192.168.8.14:8888:./:5

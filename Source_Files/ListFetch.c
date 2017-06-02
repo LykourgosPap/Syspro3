@@ -8,17 +8,20 @@ void thread_list(void *args1) {
     args arguments = *(args*) args1;
     char buf[512];
     usleep(100);
+    char *token;
     if (read(arguments.sock, buf, 512) < 0)
         perror_exit("read");
 
     if (!strncmp(buf, "FETCH", 5)) {
-            FILE *filetosend = open(dof, "r");
-            while (fgets(buf, sizeof (buf), dof) != 0) {
+            token = strtok(buf, " ");
+            token = strtok(NULL, " ");
+            FILE *filetosend = fopen(token, "r");
+            while (fgets(buf, sizeof (buf), filetosend) != 0) {
                 if (write(arguments.sock, buf, strlen(buf)) < 0)
                     perror_exit("write");
                 memset(buf, 0, 512);
             }
-            close(filetosend);
+            fclose(filetosend);
     }
     
     if (!strncmp(buf, "LIST", 5)) {

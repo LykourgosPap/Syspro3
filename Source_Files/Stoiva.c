@@ -3,18 +3,18 @@
 #include "stdio.h"
 
 void stoivinit(stoiva *st){
-    st->items=0;
+    st->items=-1;
 }
 
 int stoivfull(stoiva st){
-    if (st.items == 10000)
+    if (st.items == 999)
         return 1;
     else
         return 0;
 }
 
 int stoivempty(stoiva st){
-    if (st.items == 0)
+    if (st.items == -1)
         return 1;
     else
         return 0;
@@ -24,20 +24,19 @@ int stoivempty(stoiva st){
 
 void stoivadd(stoiva *st, char diro[256]){
     if (!stoivfull(*st)){
-        strcpy(st->dirorfile[st->items], diro);
         st->items++;
+        strcpy(st->dirorfile[st->items], diro);
     }
     else
         printf("Cannot add stack is full\n");
 }
 
-char *stoivrem(stoiva *st){
+void stoivrem(stoiva *st, char (*diro)[256]){
     if (!stoivempty(*st)){
+        strcpy(*diro, st->dirorfile[st->items]);
         st->items--;
-        return st->dirorfile[st->items+1];
     }
     else{
-        printf("Cannot remove stack is empty");
-        return '\0';
+        printf("Cannot remove stack is empty\n");
     }
 }
