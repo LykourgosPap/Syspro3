@@ -9,6 +9,7 @@
 #include "MirrorManager.h" /*MirrorManager*/
 #include "Stoiva.h"
 #include "Args.h"
+#include "Global.h"
 
 stoiva mystoiva;
 pthread_mutex_t mymutex;
@@ -22,14 +23,14 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in server, client;
     struct sockaddr *serverptr = (struct sockaddr*) &server;
     struct hostent *rem;
-    int nt = atoi(argv[3]);
+    int nt = atoi(argv[6]);
     struct arguments *args;
     pthread_t *mirror_manager = malloc(sizeof(pthread_t)), *temp;
     pthread_t workers[nt];
     stoivinit(&mystoiva);
     pthread_mutex_init(&mymutex, NULL);
     pthread_cond_init (&mycond, NULL);
-    if (argc != 4) {
+    if (argc != 7) {
         printf("Please give host name and port number\n");
         exit(1);
     }
@@ -38,10 +39,10 @@ int main(int argc, char *argv[]) {
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         perror_exit("socket");
     /* Find server address */
-    if ((rem = gethostbyname(argv[1])) == NULL) {
+    /*if ((rem = gethostbyname(argv[1])) == NULL) {
         herror("gethostbyname");
         exit(1);
-    }
+    }*/
 
     /*server.sin_family = AF_INET; /* Internet domain */
    /* memcpy(&server.sin_addr, rem->h_addr, rem->h_length);

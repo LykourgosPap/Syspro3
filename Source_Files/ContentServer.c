@@ -9,6 +9,7 @@
 #include <signal.h> /* signal */
 #include <string.h> //strlen
 #include "MirrorManager.h" /*list,fetch*/
+#include "Global.h"
 
 void perror_exit(char *message);
  
@@ -16,7 +17,8 @@ int main(int argc , char *argv[])
 {
     int socket_desc , client_sock , c , *new_sock;
     struct sockaddr_in server , client;
-    char dir[256] = argv[1];
+    char dir[256];
+    strcpy(dir, argv[1]);
      
     //Create socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
