@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
                 write(client_sock, "ok", 2);
                 continue;
         }
-        args = malloc(1*sizeof(struct arguments));
+        args = malloc(sizeof(struct arguments));
         memcpy(&server.sin_addr, rem->h_addr, rem->h_length);
         token = strtok(NULL, ":");
         port = atoi(token);
@@ -103,6 +103,9 @@ int main(int argc, char *argv[]) {
             perror_exit("last write");
     }
     for (i=0; i<nt; i++) {
+        args = malloc(sizeof(struct arguments));
+        if ((args->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+            perror_exit("socket");
         strcpy(args->dof, argv[4]);
         if (pthread_create(&(workers[i]), NULL, thread_fetch, (void*) args) < 0) {
             perror("could not create thread");
@@ -111,6 +114,7 @@ int main(int argc, char *argv[]) {
     pthread_join(*mirror_manager, NULL);
     pthread_mutex_destroy(&mymutex);
     pthread_cond_destroy(&mycond);
+    free(mirror_manager);
 }
 
 void perror_exit(char *message) {
