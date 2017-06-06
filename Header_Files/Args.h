@@ -5,9 +5,11 @@
 
 typedef struct arguments{
     int sock;
-    struct sockaddr *server;
+    char ip4[128];
     char dof[256];
     int delay;
+    char port[9];
+    int ID;
 }args;
 
 #endif /* ARGS_H */

@@ -7,11 +7,12 @@
 #include <stdlib.h> /* exit */
 #include <string.h> /* strlen */
 #include "MirrorManager.h" /*MirrorManager*/
-#include "Stoiva.h"
+#include "Oura.h"
 #include "Args.h"
 #include "Global.h"
+#include "mylist.h"
 
-stoiva mystoiva;
+oura myoura;
 pthread_mutex_t mymutex;
 pthread_cond_t mycond;
 
@@ -25,9 +26,9 @@ int main(int argc, char *argv[]) {
     struct hostent *rem;
     int nt = atoi(argv[6]);
     struct arguments *args;
-    pthread_t *mirror_manager = malloc(sizeof(pthread_t)), *temp;
+    mylist *mirror_manager;
     pthread_t workers[nt];
-    stoivinit(&mystoiva);
+    ourinit(&myoura);
     pthread_mutex_init(&mymutex, NULL);
     pthread_cond_init (&mycond, NULL);
     if (argc != 7) {
@@ -70,16 +71,18 @@ int main(int argc, char *argv[]) {
         letters = atoi(buf);
         write(client_sock, "ok", 2);
         while (read(client_sock, buf, letters) <= 0);
-        strtok(buf, ":");
+        token = strtok(buf, ":");
         if ((rem = gethostbyname(buf)) == NULL){
                 herror("gethostbyname");
                 write(client_sock, "ok", 2);
                 continue;
         }
         args = malloc(sizeof(struct arguments));
+        strcpy(args->ip4, token);
         memcpy(&server.sin_addr, rem->h_addr, rem->h_length);
         token = strtok(NULL, ":");
         port = atoi(token);
+        strcpy(args->port, token);
         server.sin_port = htons(port); /* Server port */
                 /* Initiate connection */
 
@@ -90,12 +93,15 @@ int main(int argc, char *argv[]) {
         token = strtok(NULL, ":");
         args->delay = atoi(token);
         thread_count++;
-        temp = realloc(mirror_manager, thread_count * sizeof(pthread_t));
-        mirror_manager = temp;
-        args->server = serverptr;
-        if (connect(args->sock, args->server, sizeof (server)) < 0)
+        if (thread_count == 1)
+                mylinit(&mirror_manager);
+        else
+            myladd(mirror_manager);
+        args->ID = thread_count;
+        if (connect(args->sock, serverptr, sizeof (server)) < 0)
             perror("connect");
-        if (pthread_create(&(mirror_manager[thread_count-1]), NULL, Mirror_Manager, (void*) args) < 0) {
+        pthread_t *temp= getthread(mirror_manager, thread_count);
+        if (pthread_create(temp, NULL, Mirror_Manager, (void*) args) < 0) {
             perror("could not create thread");
             return -1;
         }
@@ -104,17 +110,16 @@ int main(int argc, char *argv[]) {
     }
     for (i=0; i<nt; i++) {
         args = malloc(sizeof(struct arguments));
-        if ((args->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-            perror_exit("socket");
         strcpy(args->dof, argv[4]);
         if (pthread_create(&(workers[i]), NULL, thread_fetch, (void*) args) < 0) {
             perror("could not create thread");
         }
     }
-    pthread_join(*mirror_manager, NULL);
+    for (i=0; i<nt; i++)
+        pthread_join(workers[i], NULL);
     pthread_mutex_destroy(&mymutex);
     pthread_cond_destroy(&mycond);
-    free(mirror_manager);
+    myldel(&mirror_manager);
 }
 
 void perror_exit(char *message) {

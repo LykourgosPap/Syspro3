@@ -18,6 +18,7 @@ void perror_exit(char *message);
 int main(int argc , char *argv[])
 {
     int socket_desc , client_sock , c;
+    int port=atoi(argv[2]);
     struct sockaddr_in server , client;
     char dir[256];
     strcpy(dir, argv[1]);
@@ -34,7 +35,7 @@ int main(int argc , char *argv[])
     //Prepare the sockaddr_in structure
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 8888 );
+    server.sin_port = htons( port );
      
     //Bind
     if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
@@ -57,7 +58,6 @@ int main(int argc , char *argv[])
  
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
     {
-        puts("Connection accepted");
          
         pthread_t sniffer_thread;
         arguments = malloc(sizeof(args));

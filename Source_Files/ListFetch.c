@@ -11,9 +11,11 @@ void thread_list(void *args1) {
     char *token;
     while (read(arguments->sock, buf, 512) < 0);
     if (!strncmp(buf, "FETCH", 5)) {
-            token = strtok(buf, " ");
-            token = strtok(NULL, " ");
-            FILE *filetosend = fopen(token, "r");
+            FILE *filetosend = fopen(&buf[5], "r");
+                            printf("%s\n",buf);
+            if (filetosend == NULL){
+                printf("file to send");
+            }
             while (fgets(buf, sizeof (buf), filetosend) != 0) {
                 if (write(arguments->sock, buf, strlen(buf)) < 0)
                     perror_exit("write");
@@ -23,7 +25,6 @@ void thread_list(void *args1) {
     }
     
     if (!strncmp(buf, "LIST", 4)) {
-        printf("bika\n");
         char buf2[512];
         sprintf(buf2, "ls -Rp %s", arguments->dof);
         FILE *ls = popen(buf2, "r");
@@ -35,10 +36,9 @@ void thread_list(void *args1) {
             }
             memset(buf, 0, 512);
         }
+        write(arguments->sock, "END\0", 4);
         pclose(ls);
     }
-    printf("Closing connection.\n");
-    write(arguments->sock, "END\0", 4);
     close(arguments->sock); /* Close socket */
     free(arguments);
 }
